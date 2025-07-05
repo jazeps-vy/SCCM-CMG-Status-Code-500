@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+		"VMSS-name": {
+            "type": "String"
+        },
+        "DscExtensionArchiveFileName": {
+            "type": "String"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "SecureString"
+        },
+        "DscExtensionUpdateTagVersion": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "apiVersion": "2021-07-01",
+            "name": "[parameters('VMSS-name')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "overprovision": true,
+                "upgradePolicy": {
+                    "mode": "Manual"
+                },
+                "virtualMachineProfile": {
+                    "extensionProfile": {
+                        "extensions": [
+                            {
+                                "name": "DSC",
+                                "properties": {
+                                    "publisher": "Microsoft.Powershell",
+                                    "type": "DSC",
+                                    "typeHandlerVersion": "2.20",
+                                    "autoUpgradeMinorVersion": false,
+                                    "forceUpdateTag": "[parameters('DscExtensionUpdateTagVersion')]",
+                                    "settings": {
+                                        "configuration": {
+                                            "COPIED": "CONFIGURATION"
+                                        },
+                                        "configurationArguments": {
+                                            "COPIED": "ARGUMENTS"
+                                        }
+                                    },
+                                    "protectedSettings": {
+                                        "configurationUrlSasToken": "[parameters('_artifactsLocationSasToken')]"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
